@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}داشبورد مدیریت{% endblock %}
+{% block header %}📊 داشبورد مدیریت TEOS{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-gray-500">👥 کاربران کل</h3>
+        <p class="text-3xl font-bold" id="totalUsers">-</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-gray-500">🎵 آهنگ‌ها</h3>
+        <p class="text-3xl font-bold" id="totalSongs">-</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-gray-500">💰 درآمد امروز</h3>
+        <p class="text-3xl font-bold" id="todayRevenue">-</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-gray-500">📦 سفارشات امروز</h3>
+        <p class="text-3xl font-bold" id="todayOrders">-</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-lg font-bold mb-4">📈 کاربران جدید (آخرین ۷ روز)</h3>
+        <canvas id="usersChart" height="200"></canvas>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-lg font-bold mb-4">🎵 آهنگ‌های محبوب</h3>
+        <ul id="topSongs" class="space-y-2"></ul>
+    </div>
+</div>
+
+<div class="mt-6 bg-white rounded-lg shadow p-4">
+    <h3 class="text-lg font-bold mb-4">📋 آخرین فعالیت‌ها</h3>
+    <ul id="recentActivities" class="space-y-2"></ul>
+</div>
+
+<script>
+    async function loadStats() {
+        try {
+            const res = await axios.get('/api/admin/stats');
+            document.getElementById('totalUsers').innerText = res.data.users.total_users || 0;
+            document.getElementById('totalSongs').innerText = res.data.music.total_songs || 0;
+            document.getElementById('todayRevenue').innerText = (res.data.daily?.revenue || 0).toLocaleString() + ' تومان';
+            document.getElementById('todayOrders').innerText = res.data.daily?.new_orders || 0;
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadTopSongs() {
+        try {
+            const res = await axios.get('/api/music/popular?limit=5');
+            const list = document.getElementById('topSongs');
+            list.innerHTML = '';
+            res.data.forEach(song => {
+                list.innerHTML += `<li>🎵 ${song.title} - ${song.artist} (${song.plays} پخش)</li>`;
+            });
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadChart() {
+        try {
+            const res = await axios.get('/api/admin/stats/daily?days=7');
+            const ctx = document.getElementById('usersChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: res.data.labels,
+                    datasets: [{
+                        label: 'کاربران جدید',
+                        data: res.data.values,
+                        borderColor: '#0088cc',
+                        fill: false
+                    }]
+                }
+            });
+        } catch(e) { console.error(e); }
+    }
+    
+    loadStats();
+    loadTopSongs();
+    loadChart();
+</script>
+{% endblock %}

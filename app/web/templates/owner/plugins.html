@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}مدیریت پلاگین‌ها{% endblock %}
+{% block header %}🧩 مدیریت پلاگین‌ها{% endblock %}
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="mb-4">
+        <button onclick="uploadPlugin()" class="bg-green-500 text-white px-4 py-2 rounded">➕ نصب پلاگین جدید</button>
+        <input type="file" id="pluginFile" accept=".zip" style="display:none" onchange="installPlugin(this)">
+    </div>
+    <table class="w-full">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="p-3 text-right">نام</th>
+                <th class="p-3 text-right">نسخه</th>
+                <th class="p-3 text-right">نویسنده</th>
+                <th class="p-3 text-right">وضعیت</th>
+                <th class="p-3 text-right">عملیات</th>
+            </tr>
+        </thead>
+        <tbody id="pluginsTable"></tbody>
+    </table>
+</div>
+
+<script>
+    async function loadPlugins() {
+        try {
+            const res = await axios.get('/api/owner/plugins');
+            const tbody = document.getElementById('pluginsTable');
+            tbody.innerHTML = '';
+            res.data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3">${p.display_name}</td>
+                        <td class="p-3">${p.version}</td>
+                        <td class="p-3">${p.author || '-'}</td>
+                        <td class="p-3">${p.enabled ? '✅ فعال' : '❌ غیرفعال'}</td>
+                        <td class="p-3">
+                            <button onclick="togglePlugin('${p.name}')" class="text-blue-500">${p.enabled ? 'غیرفعال' : 'فعال'}</button>
+                            <button onclick="uninstallPlugin('${p.name}')" class="text-red-500 mr-2">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch(e) { console.error(e); }
+    }
+    
+    function uploadPlugin() {
+        document.getElementById('pluginFile').click();
+    }
+    
+    async function installPlugin(input) {
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        await axios.post('/api/owner/plugins/install', formData);
+        alert('پلاگین نصب شد');
+        loadPlugins();
+    }
+    
+    async function togglePlugin(name) {
+        await axios.post(`/api/owner/plugins/${name}/toggle`);
+        loadPlugins();
+    }
+    
+    async function uninstallPlugin(name) {
+        if(confirm('آیا از حذف پلاگین مطمئن هستید؟')) {
+            await axios.delete(`/api/owner/plugins/${name}`);
+            loadPlugins();
+        }
+    }
+    
+    loadPlugins();
+</script>
+{% endblock %}

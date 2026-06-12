@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}تنظیمات سیستم{% endblock %}
+{% block header %}⚙️ تنظیمات سیستم{% endblock %}
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-bold mb-4">تنظیمات عمومی</h3>
+    <form id="settingsForm">
+        <div class="mb-4">
+            <label class="block mb-1">نام سیستم</label>
+            <input type="text" id="systemName" class="border rounded w-full p-2">
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1">پاداش دعوت (تومان)</label>
+            <input type="number" id="referralBonus" class="border rounded w-full p-2">
+        </div>
+        <div class="mb-4">
+            <label class="block mb-1">فعال بودن بخش موزیک</label>
+            <select id="musicEnabled" class="border rounded w-full p-2">
+                <option value="true">فعال</option>
+                <option value="false">غیرفعال</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">ذخیره تنظیمات</button>
+    </form>
+</div>
+
+<script>
+    async function loadSettings() {
+        try {
+            const res = await axios.get('/api/owner/settings');
+            document.getElementById('systemName').value = res.data.system_name || 'TEOS';
+            document.getElementById('referralBonus').value = res.data.referral_bonus || 5000;
+            document.getElementById('musicEnabled').value = res.data.music_enabled ? 'true' : 'false';
+        } catch(e) { console.error(e); }
+    }
+    
+    document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/api/owner/settings', {
+                system_name: document.getElementById('systemName').value,
+                referral_bonus: parseInt(document.getElementById('referralBonus').value),
+                music_enabled: document.getElementById('musicEnabled').value === 'true'
+            });
+            alert('تنظیمات ذخیره شد');
+        } catch(e) { alert('خطا'); }
+    });
+    
+    loadSettings();
+</script>
+{% endblock %}

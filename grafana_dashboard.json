@@ -1,0 +1,27 @@
+{
+  "dashboard": {
+    "title": "TEOS Monitoring",
+    "panels": [
+      {
+        "title": "Active Users",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "teos_active_users",
+            "legendFormat": "Active Users"
+          }
+        ]
+      },
+      {
+        "title": "API Requests per Second",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(teos_api_requests_total[1m])",
+            "legendFormat": "RPS"
+          }
+        ]
+      }
+    ]
+  }
+}

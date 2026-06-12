@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>🧩 مدیریت پلاگین‌ها</h1>
+    <table class="table">
+        <thead>
+            <tr><th>نام</th><th>نسخه</th><th>نویسنده</th><th>وضعیت</th><th>عملیات</th></tr>
+        </thead>
+        <tbody>
+            {% for plugin in plugins %}
+            <tr>
+                <td>{{ plugin.display_name }}</td>
+                <td>{{ plugin.version }}</td>
+                <td>{{ plugin.author }}</td>
+                <td>{% if plugin.enabled %}✅ فعال{% else %}❌ غیرفعال{% endif %}</td>
+                <td>
+                    <button onclick="togglePlugin('{{ plugin.name }}')">تغییر وضعیت</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+function togglePlugin(name) {
+    fetch(`/api/owner/plugins/${name}/toggle`, {method: 'POST'})
+        .then(() => location.reload());
+}
+</script>
+{% endblock %}

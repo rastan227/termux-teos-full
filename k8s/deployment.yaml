@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teos-bot
+  namespace: teos
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: teos-bot
+  template:
+    metadata:
+      labels:
+        app: teos-bot
+    spec:
+      containers:
+      - name: bot
+        image: teos/bot:latest
+        envFrom:
+        - configMapRef:
+            name: teos-config
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: teos-secrets
+              key: database_url
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teos-api
+  namespace: teos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: teos-api
+  template:
+    metadata:
+      labels:
+        app: teos-api
+    spec:
+      containers:
+      - name: api
+        image: teos/api:latest
+        envFrom:
+        - configMapRef:
+            name: teos-config
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teos-api-svc
+  namespace: teos
+spec:
+  selector:
+    app: teos-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teos-ingress
+  namespace: teos
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+  - host: teos.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teos-api-svc
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - teos.yourdomain.com
+    secretName: teos-tls

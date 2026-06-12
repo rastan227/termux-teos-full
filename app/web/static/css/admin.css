@@ -1,0 +1,50 @@
+/* TEOS Admin Panel Custom CSS */
+:root {
+    --primary: #0088cc;
+    --primary-dark: #006699;
+    --secondary: #00aaff;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --dark: #343a40;
+    --light: #f8f9fa;
+}
+body {
+    font-family: 'Tahoma', 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+    direction: rtl;
+}
+.sidebar {
+    background: var(--dark);
+    min-height: 100vh;
+    color: white;
+}
+.sidebar .nav-link {
+    color: #ddd;
+}
+.sidebar .nav-link:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+}
+.main-content {
+    padding: 20px;
+}
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.btn-primary {
+    background: var(--primary);
+    border: none;
+}
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+.status-active { background: var(--success); color: white; }
+.status-inactive { background: var(--danger); color: white; }
+.status-pending { background: var(--warning); color: black; }
